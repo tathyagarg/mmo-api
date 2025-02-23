@@ -27,7 +27,7 @@ PREFIX = "/api/v1"
 app = FastAPI()
 api = APIRouter(prefix=PREFIX)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/oauth2")
 
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | None:
@@ -41,14 +41,14 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | No
 
 
 @api.post(
-    "/token",
+    "/oauth2",
     response_model=models.Token,
     responses={
         401: {"model": models.Error}
     },
-    tags=["token"],
+    tags=["auth"],
     summary="Login to get an access token",
-    description=Path("docs/post_token.md").read_text(),
+    description=Path("docs/post_oauth2.md").read_text(),
     response_description="The access token",
 )
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
