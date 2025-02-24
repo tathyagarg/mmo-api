@@ -20,7 +20,7 @@ if not success:
 DATABASE = "data/users.json"
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # One day
 
 PREFIX = "/api/v1"
 
@@ -30,7 +30,7 @@ api = APIRouter(prefix=PREFIX)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/oauth2")
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | None:
+def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
@@ -48,7 +48,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | No
     },
     tags=["auth"],
     summary="Login to get an access token",
-    description=Path("docs/post_oauth2.md").read_text(),
+    description=Path("docs/endpoints/post_oauth2.md").read_text(),
     response_description="The access token",
 )
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
