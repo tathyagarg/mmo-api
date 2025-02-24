@@ -1,6 +1,6 @@
 Allows you to signup or login to the application
 
-## POST /api/v1/token
+## POST /api/v1/oauth2
 
 ### Parameters
 
@@ -15,7 +15,7 @@ Allows you to signup or login to the application
 
 ### Example Request
 ```http
-POST /api/v1/token HTTP/1.1
+POST /api/v1/oauth2 HTTP/1.1
 Accept: application/json
 Content-Type: application/x-www-form-urlencoded
 
