@@ -1,9 +1,7 @@
-Allows you to signup or login to the application
-
-## POST /api/v1/oauth2
+## POST /api/v1/auth/signup
 
 ### Description
-Either creates a new user or authenticates an existing user. If the user does not exist, a new user is created. If the user exists, the user is authenticated.
+Creates a new user in the application
 
 ### Parameters
 
@@ -12,14 +10,13 @@ Either creates a new user or authenticates an existing user. If the user does no
 
 ### Responses
 
-- `200 OK` - The user has been authenticated successfully
 - `201 Created` - The user has been created successfully
 - `422 Unprocessable Request` - The request is missing a required parameter
-- `401 Unauthorized` - The user could not be authenticated
+- `409 Conflict` - The username is already taken
 
 ### Example Request
 ```http
-POST /api/v1/oauth2 HTTP/1.1
+POST /api/v1/auth/signup HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
@@ -37,7 +34,7 @@ Content-Length: 204
 Content-Type: application/json
 Date: Tue, 23 Feb 2025 21:30:00 GMT
 
-{"message":"User logged in","data":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc","token_type":"bearer"}}
+{"message":"User created","data":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc","token_type":"bearer"}}
 ```
 
 ### Prettier JSON Response
@@ -54,8 +51,13 @@ Date: Tue, 23 Feb 2025 21:30:00 GMT
 ### Example `curl`
 
 ```bash
-curl -X POST https://mmo.tathya.hackclub.app/api/v1/oauth2 \
+curl -X GET https://mmo.tathya.hackclub.app/api/v1/auth/login \
   -H "Accept: application/json" \
   -H "Content-Type: application/json" \
   -d '{"username": "johndoe", "password": "password"}'
+```
+
+### Example `mcurl`
+```bash
+mcurl /auth/signup -X GET -d '{"username": "johndoe", "password": "password"}'
 ```

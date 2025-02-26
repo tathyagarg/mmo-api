@@ -26,8 +26,18 @@ if [ -z "$1" ] || [ "$1" = "help" ]; then
   fi
 fi
 
+HEADERS=(
+  "-H" "Content-Type: application/json" 
+  "-H" "Authorization: Bearer $(cat ~/.mcurl)"
+)
+
 if [ "$1" = "set" ]; then
   echo "$2" >~/.mcurl
 else
-  curl mmo.tathya.hackclub.app/api/v1/$1 -H "Authorization: Bearer $(cat ~/.mcurl)" ${@:2}
+  # Check if debug env is set
+  if [ "$DEBUG" = "1" ]; then
+    curl localhost:8000/api/v1$1 "${@:2}" "${HEADERS[@]}"
+  else
+    curl mmo.tathya.hackclub.app/api/v1$1 -H "Authorization: Bearer $(cat ~/.mcurl)" "${@:2}"
+  fi
 fi
