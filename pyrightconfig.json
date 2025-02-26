@@ -1,0 +1,5 @@
+{
+  "include": ["mmo"],
+  "venvPath": ".",
+  "venv": ".venv"
+}

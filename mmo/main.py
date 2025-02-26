@@ -1,22 +1,11 @@
 from typing import Annotated
-import json
-import os
-from datetime import datetime, timedelta
-from pathlib import Path
 
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, Body, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse, FileResponse
-
-from fastapi_utils.tasks import repeat_every
-
-import bcrypt
-import jwt
+from fastapi.responses import FileResponse
 
 from . import auth
-from . import models
-from . import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, PREFIX, DATABASE
+from . import PREFIX
 
 app = FastAPI()
 api = APIRouter(prefix=PREFIX)

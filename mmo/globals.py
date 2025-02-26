@@ -6,7 +6,7 @@ if not _success:
     raise Exception("Failed to load .env file")
 
 DATABASE = "data/users.json"
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "test_secret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # One day
 

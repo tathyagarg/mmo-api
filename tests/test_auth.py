@@ -22,7 +22,6 @@ def test_delete():
             "password": "test"
         }
     )
-    json = response.json()
 
     # User may or may not exist, so we don't care about the status code
     assert response.status_code not in [422, 500]
