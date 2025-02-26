@@ -46,10 +46,21 @@ async def mcurl():
 @api.get("/me")
 async def read_users_me(current_user: Annotated[dict, Depends(auth.get_current_user)]):
     if isinstance(current_user, int):
-        raise HTTPException(
-            status_code=current_user,
-            detail="Token has expired"
-        )
+        if current_user == status.HTTP_410_GONE:
+            raise HTTPException(
+                status_code=current_user,
+                detail="Token has expired"
+            )
+        elif current_user == status.HTTP_401_UNAUTHORIZED:
+            raise HTTPException(
+                status_code=current_user,
+                detail="Invalid token"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unknown error"
+            )
         
     return {"username": current_user["sub"]}
 

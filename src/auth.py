@@ -39,7 +39,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
 
         return payload
     except jwt.ExpiredSignatureError:
-        return stauts.HTTP_401_UNAUTHORIZED
+        return stauts.HTTP_410_GONE
     except jwt.InvalidTokenError:
         return status.HTTP_401_UNAUTHORIZED
 
