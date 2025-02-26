@@ -4,8 +4,10 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, Body
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Body, status
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 import bcrypt
 import jwt
 import dotenv
@@ -27,6 +29,8 @@ PREFIX = "/api/v1"
 app = FastAPI()
 api = APIRouter(prefix=PREFIX)
 
+app.mount("/docs", StaticFiles(directory="docs"), name="docs")
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/oauth2")
 
 
@@ -39,12 +43,31 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | No
     except jwt.InvalidTokenError:
         return None
 
+@app.get(
+    "/",
+    tags=["root"],
+    summary="Root endpoint",
+    description="The root endpoint of the API",
+)
+async def root():
+    return {
+        "message": "Welcome to the API",
+        "docs": "curl /docs/README.md to see the documentation",
+    }
+
 
 @api.post(
     "/oauth2",
     response_model=models.Token,
     responses={
-        401: {"model": models.Error}
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": models.Error,
+            "description": "Incorrect username or password"
+        },
+        status.HTTP_201_CREATED: {
+            "model": models.Token,
+            "description": "User created"
+        }
     },
     tags=["auth"],
     summary="Login to get an access token",
@@ -71,6 +94,7 @@ async def login(
             json.dump(users, file, indent=4)
 
         expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
         access_token = auth.create_access_token(
             data={"sub": username},
             expires=expires,
@@ -78,11 +102,17 @@ async def login(
             algorithm=ALGORITHM
         )
 
-        return models.Token(access_token=access_token, token_type="bearer")
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content=models.Token(access_token=access_token, token_type="bearer").dict()
+        )
 
     user = users[username]
     if not auth.verify_password(password, user["password"]):
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Incorrect username or password. If you're trying to register with this username, it likely means the username is already taken."
+        )
 
     expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(

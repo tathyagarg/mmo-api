@@ -1,7 +1,10 @@
 # MMO API Documentation
 
-- All endpoints in the API are prefixed with `api/v1`
-- The `endpoints` directory contains API documentation for each endpoint in the MMO API. Each file is named after the endpoint it documents.
+- All endpoints in the API (not docs) are prefixed with `api/v1`
+- The `docs/endpoints` directory contains API documentation for each endpoint in the MMO API. Each file is named after the endpoint it documents.
+
+## Endpoints
+1. `POST /oauth2` - [OAuth 2.0](endpoints/post_oauth2.md)
 
 ## Authentication
 
