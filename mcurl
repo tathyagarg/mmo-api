@@ -38,6 +38,6 @@ else
   if [ "$DEBUG" = "1" ]; then
     curl localhost:8000/api/v1$1 "${@:2}" "${HEADERS[@]}"
   else
-    curl mmo.tathya.hackclub.app/api/v1$1 -H "Authorization: Bearer $(cat ~/.mcurl)" "${@:2}"
+    curl mmo.tathya.hackclub.app/api/v1$1 "${@:2}" "${HEADERS[@]}"
   fi
 fi

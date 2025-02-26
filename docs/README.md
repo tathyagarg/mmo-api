@@ -4,7 +4,9 @@
 - The `docs/endpoints` directory contains API documentation for each endpoint in the MMO API. Each file is named after the endpoint it documents.
 
 ## Endpoints
-1. `POST /oauth2` - [OAuth 2.0](endpoints/post_oauth2.md)
+### Auth
+- [POST /auth/signup](endpoints/auth/post_signup.md)
+- [GET /auth/login](endpoints/auth/get_login.md)
 
 ## `mcurl` 
 Run the following command to download mcurl:
@@ -15,12 +17,12 @@ After downloading `mcurl`, run:
 ```bash
 mcurl set <access_token> 
 ```
-Where `<access_token>` is the token you get from [POST /oauth2](endpoints/post_oauth2.md).
+Where `<access_token>` is the token you get from an [authentication endpoint](###Auth).
 
 
 ## Authentication
 
-The MMO API uses OAuth 2.0 for authentication. To authenticate, you must first obtain an access token (refer to [POST /oauth2](endpoints/post_oauth2.md)).  Once you have an access token, you can either:
+The MMO API uses OAuth 2.0 for authentication. To authenticate, you must first obtain an access token (refer to [authentication endpoints](###Auth)).  Once you have an access token, you can either:
 
 1. Use regular curl and include it in the `Authorization` header of each request to the API. The value of the `Authorization` header should be `Bearer <access_token>`, where `<access_token>` is the access token you obtained.
 
