@@ -5,13 +5,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Body
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 import bcrypt
 import jwt
 import dotenv
 
-import auth
-import models
+from . import auth
+from . import models
 
 success = dotenv.load_dotenv()
 if not success:
@@ -30,7 +30,7 @@ api = APIRouter(prefix=PREFIX)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/oauth2")
 
 
-def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | None:
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | None:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
@@ -51,10 +51,10 @@ def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | N
     description=Path("docs/endpoints/post_oauth2.md").read_text(),
     response_description="The access token",
 )
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    username = form_data.username
-    password = form_data.password
-
+async def login(
+    username: Annotated[str, Body()],
+    password: Annotated[str, Body()],
+):
     with open(DATABASE, "r") as file:
         users = json.load(file)
 
