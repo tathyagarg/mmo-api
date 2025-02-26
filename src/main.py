@@ -104,7 +104,10 @@ async def login(
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content=models.Token(access_token=access_token, token_type="bearer").dict()
+            content={
+                "message": "User created",
+                "data": models.Token(access_token=access_token, token_type="bearer").dict()
+            }
         )
 
     user = users[username]
@@ -122,7 +125,13 @@ async def login(
         algorithm=ALGORITHM
     )
 
-    return models.Token(access_token=access_token, token_type="bearer")
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "message": "User logged in",
+            "data": models.Token(access_token=access_token, token_type="bearer").dict()
+        }
+    )
 
 
 @api.get("/me")
