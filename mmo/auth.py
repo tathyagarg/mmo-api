@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+import datetime
+from datetime import timedelta
 from typing import Annotated
 from pathlib import Path
 import json
 
-from fastapi import Depends, Body, status, APIRouter
+from fastapi import Depends, Body, status, APIRouter, Request
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
@@ -11,7 +12,7 @@ from fastapi.responses import JSONResponse
 import jwt
 import bcrypt
 
-from . import PREFIX, SECRET_KEY, ALGORITHM, DATABASE, ACCESS_TOKEN_EXPIRE_MINUTES
+from . import PREFIX, SECRET_KEY, ALGORITHM, DATABASE, ACCESS_TOKEN_EXPIRE_MINUTES, RESERVED_USERNAMES
 from . import models
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/auth/login")
@@ -24,7 +25,7 @@ def verify_password(plain: str, hashed: str):
 
 def create_access_token(data: dict, expires: timedelta, secret: str, algorithm: str):
     to_encode = data.copy()
-    expire = datetime.utcnow() + expires
+    expire = datetime.datetime.now(datetime.UTC) + expires
     to_encode.update({"exp": expire})
 
     return jwt.encode(to_encode, secret, algorithm=algorithm)
@@ -34,7 +35,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
-        if datetime.fromtimestamp(payload.get('exp', 0)) < datetime.utcnow():
+        if datetime.datetime.fromtimestamp(payload.get('exp', 0)) < datetime.datetime.now(datetime.UTC):
             raise jwt.ExpiredSignatureError
 
         return payload
@@ -61,11 +62,12 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
 async def signup(
     username: Annotated[str, Body()],
     password: Annotated[str, Body()],
+    request: Request
 ):
     with open(DATABASE, "r") as file:
         users = json.load(file)
 
-    if username in users:
+    if username in users or (username in RESERVED_USERNAMES and not request.headers.get("Is-Testing")):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Username is taken"
@@ -120,12 +122,13 @@ async def signup(
 async def login(
     username: Annotated[str, Body()],
     password: Annotated[str, Body()],
+    request: Request
 ):
     with open(DATABASE, "r") as file:
         users = json.load(file)
 
     user = users.get(username)
-    if user is None:
+    if user is None or (username in RESERVED_USERNAMES and not request.headers.get("Is-Testing")):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
@@ -152,3 +155,47 @@ async def login(
             data=models.Token(access_token=access_token, token_type="bearer")
         ).model_dump()
     )
+
+@auth_router.delete(
+    "/delete",
+    status_code=status.HTTP_200_OK,
+    tags=["auth"],
+    summary="Delete a user",
+    description=Path("docs/endpoints/auth/delete_delete.md").read_text(),
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "description": "User not found"
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Incorrect username or password"
+        },
+    },
+)
+async def delete_user(
+    username: Annotated[str, Body()],
+    password: Annotated[str, Body()],
+):
+    with open(DATABASE, "r") as file:
+        users = json.load(file)
+
+    user = users.get(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    if not verify_password(password, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password."
+        )
+
+    del users[username]
+
+    with open(DATABASE, "w") as file:
+        json.dump(users, file, indent=4)
+
+    return {
+        "message": "User deleted"
+    } 

@@ -1,23 +1,22 @@
-## GET /api/v1/auth/login
+# POST /api/v1/auth/signup
 
-### Description
-Logs in a user and returns an access token
+## Description
+Creates a new user in the application
 
-### Parameters
+## Parameters
 
 - `username` (string, body, required) - The username of the user
 - `password` (string, body, required) - The password of the user
 
-### Responses
+## Responses
 
-- `200 OK` - The user has been logged in successfully 
+- `201 Created` - The user has been created successfully
 - `422 Unprocessable Request` - The request is missing a required parameter
-- `401 Unauthorized` - The username or password is incorrect
-- `404 Not Found` - The user does not exist
+- `409 Conflict` - The username is already taken
 
-### Example Request
+## Example Request
 ```http
-GET /api/v1/auth/login HTTP/1.1
+GET /api/v1/auth/signup HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 
@@ -27,7 +26,7 @@ Content-Type: application/json
 }
 ```
 
-### Example Response
+## Example Response
 
 ```http
 HTTP/1.1 200 OK
@@ -38,7 +37,7 @@ Date: Tue, 23 Feb 2025 21:30:00 GMT
 {"message":"User created","data":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc","token_type":"bearer"}}
 ```
 
-### Prettier JSON Response
+## Prettier JSON Response
 ```json
 {
   "message": "User created",
@@ -49,7 +48,7 @@ Date: Tue, 23 Feb 2025 21:30:00 GMT
 }
 ```
 
-### Example `curl`
+## Example `curl`
 
 ```bash
 curl -X POST https://mmo.tathya.hackclub.app/api/v1/auth/signup \
@@ -58,7 +57,7 @@ curl -X POST https://mmo.tathya.hackclub.app/api/v1/auth/signup \
   -d '{"username": "johndoe", "password": "password"}'
 ```
 
-### Example `mcurl`
+## Example `mcurl`
 ```bash
 mcurl /auth/signup -X POST -d '{"username": "johndoe", "password": "password"}'
 ```

@@ -61,7 +61,7 @@ async def read_users_me(current_user: Annotated[dict, Depends(auth.get_current_u
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Unknown error"
             )
-        
+
     return {"username": current_user["sub"]}
 
 api.include_router(auth.auth_router)

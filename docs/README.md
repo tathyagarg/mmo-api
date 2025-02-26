@@ -7,6 +7,7 @@
 ### Auth
 - [POST /auth/signup](endpoints/auth/post_signup.md)
 - [GET /auth/login](endpoints/auth/get_login.md)
+- [DELETE /auth/delete](endpoints/auth/delete_delete.md)
 
 ## `mcurl` 
 Run the following command to download mcurl:
