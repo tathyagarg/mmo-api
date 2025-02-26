@@ -1,0 +1,33 @@
+#!/bin/sh
+
+help () {
+  echo "Usage: mcurl <endpoint>"
+  echo "mcurl doesn't need the entire URL, just the endpoint (without /api/v1)."
+  echo "Example: mcurl /me"
+  echo ""
+  echo "Commands:"
+  echo "  set: Sets the token to use for requests. Get a token from the /api/v1/oauth2 endpoint. Usage: mcurl set <token>"
+}
+
+# Ensures user is not on windows
+case "$(uname -s)" in
+CYGWIN* | MINGW* | MSYS* | Windows_NT)
+  echo "This script is not supported on Windows."
+  return 1 # Use `return` instead of `exit` since it's sourced
+  ;;
+esac
+
+if [ -z "$1" ] || [ "$1" = "help" ]; then
+  help
+  if [ -z "$1" ]; then
+    exit 1
+  else
+    exit 0
+  fi
+fi
+
+if [ "$1" = "set" ]; then
+  echo "$2" >~/.mcurl
+else
+  curl mmo.tathya.hackclub.app/api/v1/$1 -H "Authorization: Bearer $(cat ~/.mcurl)" ${@:2}
+fi

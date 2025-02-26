@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Body, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 from fastapi_utils.tasks import repeat_every
 
@@ -23,7 +23,6 @@ api = APIRouter(prefix=PREFIX)
 
 app.mount("/docs", StaticFiles(directory="docs"), name="docs")
 
-
 @app.get(
     "/",
     tags=["root"],
@@ -34,8 +33,12 @@ async def root():
     return {
         "message": "Welcome to the API",
         "docs": "curl /docs/README.md to see the documentation",
+        "helpers": "`curl https://mmo.tathya.hackclub.app/mcurl -o mcurl` to download the mcurl file."
     }
 
+@app.get("/mcurl", response_class=FileResponse)
+async def mcurl():
+    return "mcurl"
 
 @api.post(
     "/oauth2",
