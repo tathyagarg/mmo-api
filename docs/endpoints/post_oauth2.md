@@ -2,6 +2,9 @@ Allows you to signup or login to the application
 
 ## POST /api/v1/oauth2
 
+### Description
+Either creates a new user or authenticates an existing user. If the user does not exist, a new user is created. If the user exists, the user is authenticated.
+
 ### Parameters
 
 - `username` (string, body, required) - The username of the user
@@ -10,6 +13,7 @@ Allows you to signup or login to the application
 ### Responses
 
 - `200 OK` - The user has been authenticated successfully
+- `201 Created` - The user has been created successfully
 - `422 Unprocessable Request` - The request is missing a required parameter
 - `401 Unauthorized` - The user could not be authenticated
 
@@ -17,21 +21,41 @@ Allows you to signup or login to the application
 ```http
 POST /api/v1/oauth2 HTTP/1.1
 Accept: application/json
-Content-Type: application/x-www-form-urlencoded
+Content-Type: application/json
 
-grant_type=password&username=2awesome&password=sauce&scope=&client_id=&client_secret=
+{
+  "username": "johndoe",
+  "password": "password"
+}
 ```
 
 ### Example Response
 
 ```http
 HTTP/1.1 200 OK
-Content-Length: 169
+Content-Length: 204 
 Content-Type: application/json
 Date: Tue, 23 Feb 2025 21:30:00 GMT
 
+{"message":"User logged in","data":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc","token_type":"bearer"}}
+```
+
+### Prettier JSON Response
+```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYXdlc29tZSIsImV4cCI6MTc0MDI2MTM5OH0.g1hm6YRglfpG2MMiZRg8kF2Mh0ezfdlV7IeNC6qz_H8",
-  "token_type": "bearer"
+  "message": "User logged in",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc",
+    "token_type": "bearer"
+  }
 }
+```
+
+### Example `curl`
+
+```bash
+curl -X POST https://mmo.tathya.hackclub.app/api/v1/oauth2 \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "johndoe", "password": "password"}'
 ```
