@@ -8,40 +8,21 @@ from fastapi import FastAPI, APIRouter, Depends, HTTPException, Body, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+
+from fastapi_utils.tasks import repeat_every
+
 import bcrypt
 import jwt
-import dotenv
 
 from . import auth
 from . import models
-
-success = dotenv.load_dotenv()
-if not success:
-    raise Exception("Failed to load .env file")
-
-DATABASE = "data/users.json"
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # One day
-
-PREFIX = "/api/v1"
+from . import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, PREFIX, DATABASE
 
 app = FastAPI()
 api = APIRouter(prefix=PREFIX)
 
 app.mount("/docs", StaticFiles(directory="docs"), name="docs")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/oauth2")
-
-
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | None:
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
 
 @app.get(
     "/",
@@ -135,7 +116,7 @@ async def login(
 
 
 @api.get("/me")
-async def read_users_me(current_user: Annotated[dict, Depends(get_current_user)]):
+async def read_users_me(current_user: Annotated[dict, Depends(auth.get_current_user)]):
     return {"username": current_user["sub"]}
 
 app.include_router(api)
