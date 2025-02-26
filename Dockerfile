@@ -10,4 +10,4 @@ COPY ./src /mmo-api/src
 COPY ./docs /mmo-api/docs
 COPY ./.env /mmo-api/.env
 
-CMD ["fastapi", "run", "src/main.py", "--port", "8000"]
+CMD ["fastapi", "run", "src/main.py", "--port", "36607"]
