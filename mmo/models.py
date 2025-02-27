@@ -12,6 +12,10 @@ class LoginSuccessful(BaseModel):
     message: str
     data: Token
 
+class PlayerData(BaseModel):
+    x: int
+    y: int
+
 class Player(BaseModel):
     username: str
-    data: dict
+    data: PlayerData 

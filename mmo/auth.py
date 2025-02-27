@@ -112,7 +112,7 @@ async def signup(
     users[username] = {
         "password": hashed_password.decode(),
         "salt": salt.decode(),
-        "data": {}
+        "data": models.PlayerData(x=0, y=0).model_dump()
     }
 
     with open(DATABASE, "w") as file:

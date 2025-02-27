@@ -1,20 +1,28 @@
-# GET /api/v1/player/me
+# PUT /api/v1/player/move/{direction}
 
-Get the current player's information
+Move the player in the specified direction
 
 ## Parameters
 
-- `Authorization` (string, header, required) - The JWT token of the player
+- `direction` (string, path, required) - The direction in which the player should move. Options:
+  - `north`
+  - `south`
+  - `east`
+  - `west`
 
 ## Responses
 
-- `200 OK` - The player's information has been retrieved successfully
-- `401 Unauthorized` - The JWT token is invalid or expired
+- `200 OK` - The player has been moved successfully
+- `422 Unprocessable Request` - The request is missing a required Parameters
+- `400 Bad Request` - The direction is invalid
+- `401 Unauthorized` - The user is not authenticated
 
 ## Example Request
+
 ```http
-GET /api/v1/player/me HTTP/1.1
+PUT /api/v1/player/move/north HTTP/1.1
 Accept: application/json
+Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc
 ```
 
@@ -25,16 +33,17 @@ HTTP/1.1 200 OK
 Content-Length: 204
 Content-Type: application/json
 
-{"username":"johndoe","data":{"x":0,"y":0}}
+{"username":"johndoe","data":{"x":0,"y":1}}
 ```
 
 ## Prettier JSON Response
+
 ```json
 {
   "username": "johndoe",
   "data": {
     "x": 0,
-    "y": 0
+    "y": 1
   }
 }
 ```
@@ -42,13 +51,14 @@ Content-Type: application/json
 ## Example `curl`
 
 ```bash
-curl -X GET https://mmo.tathya.hackclub.app/api/v1/player/me \
+curl -X PUT https://mmo.tathya.hackclub.app/api/v1/player/move/north \
   -H "Accept: application/json" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzQwNjQ2NzE1fQ.nW9zfG2hDbOKN0Knaw4oyf4nczhLHfJjQhO7AFB04Lc"
 ```
 
 ## Example `mcurl`
+
 ```bash
-mcurl /player/me -X GET
+mcurl /player/move/north -X PUT
 ```
