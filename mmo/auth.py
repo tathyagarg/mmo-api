@@ -3,7 +3,6 @@ from datetime import timedelta
 from typing import Annotated
 from pathlib import Path
 import json
-from functools import wraps
 
 from fastapi import Depends, Body, status, APIRouter, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -60,15 +59,24 @@ def make_error_invalid_user(status_code: int) -> HTTPException:
     )
 
 
-def authentication_required(func):
-    @wraps(func)
-    async def wrapper(current_user: Annotated[dict, Depends(get_current_user)], *args, **kwargs):
-        if isinstance(current_user, int):
-            raise make_error_invalid_user(current_user)
+async def authentication_required(request: Request) -> models.Player:
+    token = await oauth2_scheme(request)
+    if not token:
+        raise make_error_invalid_user(status.HTTP_401_UNAUTHORIZED)
 
-        return await func(current_user, *args, **kwargs)
+    current_user = get_current_user(token)
+    if isinstance(current_user, int):
+        raise make_error_invalid_user(current_user)
 
-    return wrapper
+    with open(DATABASE, "r") as file:
+        users = json.load(file)
+
+    if current_user["sub"] not in users:
+        raise make_error_invalid_user(status.HTTP_401_UNAUTHORIZED)
+
+    player = models.Player(username=current_user["sub"], data=users[current_user["sub"]]["data"])
+
+    return player
 
 
 @auth_router.post(

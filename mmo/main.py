@@ -1,12 +1,9 @@
-from typing import Annotated
-
-from fastapi import FastAPI, APIRouter, Depends
+from fastapi import FastAPI, APIRouter
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from . import auth
+from . import auth, game
 from . import PREFIX
-from .game import player_router
 
 app = FastAPI()
 api = APIRouter(prefix=PREFIX)
@@ -34,6 +31,6 @@ async def mcurl():
 
 
 api.include_router(auth.auth_router)
+api.include_router(game.player_router)
 app.include_router(api)
-app.include_router(player_router)
 
