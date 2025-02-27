@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Annotated
 from pathlib import Path
 import json
+from functools import wraps
 
 from fastapi import Depends, Body, status, APIRouter, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -18,7 +19,7 @@ from . import models
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/auth/login")
 auth_router = APIRouter(prefix=f"/auth", tags=["auth"])
  
-ERROR_RESPONSES = {
+ERROR_RESPONSES: dict[int, str] = {
     status.HTTP_410_GONE: "Token has expired",
     status.HTTP_401_UNAUTHORIZED: "Invalid token",
 }
@@ -39,7 +40,10 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
-        if datetime.datetime.fromtimestamp(payload.get('exp', 0)) < datetime.datetime.now(datetime.UTC):
+        exp = datetime.datetime.fromtimestamp(payload.get('exp', 0), tz=datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
+
+        if now >= exp:
             raise jwt.ExpiredSignatureError
 
         return payload
@@ -50,16 +54,21 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
 
 
 def make_error_invalid_user(status_code: int) -> HTTPException:
-    if status_code not in ERROR_RESPONSES:
-        return HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unknown error"
-        )
-
     return HTTPException(
         status_code=status_code,
-        detail=ERROR_RESPONSES[status_code]
+        detail=ERROR_RESPONSES.get(status_code, "Unknown error")
     )
+
+
+def authentication_required(func):
+    @wraps(func)
+    async def wrapper(current_user: Annotated[dict, Depends(get_current_user)], *args, **kwargs):
+        if isinstance(current_user, int):
+            raise make_error_invalid_user(current_user)
+
+        return await func(current_user, *args, **kwargs)
+
+    return wrapper
 
 
 @auth_router.post(

@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 
 from . import auth
 from . import PREFIX
+from .game import player_router
 
 app = FastAPI()
 api = APIRouter(prefix=PREFIX)
@@ -32,13 +33,7 @@ async def mcurl():
     return "mcurl"
 
 
-@api.get("/me")
-async def read_users_me(current_user: Annotated[dict, Depends(auth.get_current_user)]):
-    if isinstance(current_user, int):
-        raise auth.make_error_invalid_user(current_user)
-
-    return {"username": current_user["sub"]}
-
 api.include_router(auth.auth_router)
 app.include_router(api)
+app.include_router(player_router)
 
