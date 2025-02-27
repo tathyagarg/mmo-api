@@ -18,6 +18,10 @@ from . import models
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/auth/login")
 auth_router = APIRouter(prefix=f"/auth", tags=["auth"])
  
+ERROR_RESPONSES = {
+    status.HTTP_410_GONE: "Token has expired",
+    status.HTTP_401_UNAUTHORIZED: "Invalid token",
+}
 
 def verify_password(plain: str, hashed: str):
     return bcrypt.checkpw(plain.encode(), hashed.encode())
@@ -43,6 +47,19 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
         return status.HTTP_410_GONE
     except jwt.InvalidTokenError:
         return status.HTTP_401_UNAUTHORIZED
+
+
+def make_error_invalid_user(status_code: int) -> HTTPException:
+    if status_code not in ERROR_RESPONSES:
+        return HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unknown error"
+        )
+
+    return HTTPException(
+        status_code=status_code,
+        detail=ERROR_RESPONSES[status_code]
+    )
 
 
 @auth_router.post(

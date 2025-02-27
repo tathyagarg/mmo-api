@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
+from fastapi import FastAPI, APIRouter, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
@@ -22,7 +22,7 @@ app.mount("/docs", StaticFiles(directory="docs"), name="docs")
 async def root():
     return {
         "message": "Welcome to the API",
-        "docs": "curl /docs/README.md to see the documentation",
+        "docs": "curl https://mmo.tathya.hackclub.app/docs/README.md to see the documentation",
         "helpers": "`curl https://mmo.tathya.hackclub.app/mcurl -o mcurl` to download the mcurl file."
     }
 
@@ -35,21 +35,7 @@ async def mcurl():
 @api.get("/me")
 async def read_users_me(current_user: Annotated[dict, Depends(auth.get_current_user)]):
     if isinstance(current_user, int):
-        if current_user == status.HTTP_410_GONE:
-            raise HTTPException(
-                status_code=current_user,
-                detail="Token has expired"
-            )
-        elif current_user == status.HTTP_401_UNAUTHORIZED:
-            raise HTTPException(
-                status_code=current_user,
-                detail="Invalid token"
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Unknown error"
-            )
+        raise auth.make_error_invalid_user(current_user)
 
     return {"username": current_user["sub"]}
 
