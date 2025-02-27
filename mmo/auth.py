@@ -18,9 +18,9 @@ from . import models
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{PREFIX}/auth/login")
 auth_router = APIRouter(prefix=f"/auth", tags=["auth"])
  
-ERROR_RESPONSES: dict[int, str] = {
-    status.HTTP_410_GONE: "Token has expired",
-    status.HTTP_401_UNAUTHORIZED: "Invalid token",
+ERROR_RESPONSES: dict[int, dict[str, str]] = {
+    status.HTTP_410_GONE: {"description": "Token has expired"},
+    status.HTTP_401_UNAUTHORIZED: {"description": "Invalid token"},
 }
 
 def verify_password(plain: str, hashed: str):
@@ -55,7 +55,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict | in
 def make_error_invalid_user(status_code: int) -> HTTPException:
     return HTTPException(
         status_code=status_code,
-        detail=ERROR_RESPONSES.get(status_code, "Unknown error")
+        detail=ERROR_RESPONSES.get(status_code, {"description": "Unknown error"})["description"]
     )
 
 
